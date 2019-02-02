@@ -15,6 +15,9 @@ public class Steps{
 	@SerializedName("html_instructions")
 	public String htmlinstructions;
 
+	@SerializedName("maneuver")
+	public String maneuver;
+
 	public Polyline polyline;
 
 	public StartLocation startlocation;
