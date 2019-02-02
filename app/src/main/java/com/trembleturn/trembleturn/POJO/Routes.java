@@ -1,4 +1,4 @@
-package com.trembleturn.trembleturn;
+package com.trembleturn.trembleturn.POJO;
 
 import java.util.List;
  
@@ -18,7 +18,4 @@ public class Routes{
 	@SerializedName("summary")
 	public String summary;
 
-	public List<Warnings> warnings;
-
-	public List<Waypointorder> waypointorder;
 }

@@ -1,4 +1,4 @@
-package com.trembleturn.trembleturn;
+package com.trembleturn.trembleturn.POJO;
 
 import java.util.List;
  
@@ -22,7 +22,4 @@ public class Legs{
 
 	public List<Steps> steps;
 
-	public List<Trafficspeedentry> trafficspeedentry;
-
-	public List<Viawaypoint> viawaypoint;
 }

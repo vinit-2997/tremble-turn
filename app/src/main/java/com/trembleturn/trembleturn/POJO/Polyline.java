@@ -1,4 +1,4 @@
-package com.trembleturn.trembleturn;
+package com.trembleturn.trembleturn.POJO;
 
 import java.util.List;
  
