@@ -6,9 +6,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class Northeast{
 	@SerializedName("lat")
-	public float lat;
+	public double lat;
 
 	@SerializedName("lng")
-	public float lng;
+	public double lng;
 
 }
