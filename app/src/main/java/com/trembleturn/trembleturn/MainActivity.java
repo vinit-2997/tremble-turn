@@ -7,6 +7,8 @@ import android.view.View;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.trembleturn.trembleturn.POJO.Routes;
 import com.trembleturn.trembleturn.webservice.ErrorType;
 import com.trembleturn.trembleturn.webservice.OnResponseListener;
 import com.trembleturn.trembleturn.webservice.ResponsePacket;
@@ -53,7 +55,13 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
     public void onSuccess(int requestCode, JSONObject response) {
         switch (requestCode) {
             case ApiRoutes.RC_A2B_STEPS:
-                Log.i(TAG, response.toString());
+                try {
+                    Routes routes = new Gson().fromJson(response.getJSONArray("routes").get(0).toString(), Routes.class);
+                    Log.i(TAG, routes.legs.get(0).steps.get(0).htmlinstructions);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 break;
         }
     }
