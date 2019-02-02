@@ -28,16 +28,7 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button left = (Button)findViewById(R.id.left);
-        Button right = (Button)findViewById(R.id.right);
-
-        left.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
+       
     }
 
 
@@ -50,6 +41,14 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
                 break;
             case R.id.call_api:
                 getAtoBSteps(new LatLng(19.0269, 72.8553), new LatLng(19.44769, 73.015137));
+                break;
+            case R.id.left_band_btn:
+                Log.d(TAG, "vibrate left");
+                vibrateLeft();
+                break;
+            case R.id.right_band_btn:
+                Log.d(TAG, "vibrate right");
+                vibrateRight();
                 break;
         }
 

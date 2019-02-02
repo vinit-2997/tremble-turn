@@ -26,15 +26,18 @@
 
 
     <Button
-        android:id="@+id/right"
+        android:id="@+id/left_band_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="right"
-        />
+        android:onClick="OnClick"
+        android:text="Left band"/>
 
     <Button
+        android:id="@+id/right_band_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/left"
-        android:text="left"/>
+        android:onClick="OnClick"
+        android:text="Right band"/>
+
+
 </LinearLayout>
