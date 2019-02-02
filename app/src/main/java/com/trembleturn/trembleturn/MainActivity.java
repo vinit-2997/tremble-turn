@@ -51,6 +51,24 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
         }
     }
 
+    private void vibrateLeft() {
+        try {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_LEFT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_LEFT_HALF);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void vibrateRight() {
+        try {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_RIGHT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_RIGHT_HALF);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onSuccess(int requestCode, JSONObject response) {
         switch (requestCode) {
@@ -61,7 +79,13 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                break;
 
+            case ApiRoutes.RC_BAND_LEFT_HALF:
+                Log.i(TAG, "Vibrate left band successful");
+                break;
+            case ApiRoutes.RC_BAND_RIGHT_HALF:
+                Log.i(TAG, "Vibrate right band successful");
                 break;
         }
     }
