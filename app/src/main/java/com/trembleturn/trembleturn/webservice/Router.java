@@ -34,7 +34,6 @@ public class Router implements Routes {
     private String tag_json_obj = "jobj_req";
     private int socketTimeout = 10000;
 
-    private ProgressDialog pdialog;
     Response.Listener successStringListener = new Response.Listener<String>() {
         @Override
         public void onResponse(String s) {
@@ -42,7 +41,7 @@ public class Router implements Routes {
                 System.out.println("-------------------------successStringListener-------------------------------");
                 System.out.println("---------" + s);
                 System.out.println("----------------------------successStringListener----------------------------");
-                dismissDialog();
+
                 ResponsePacket response = new Gson().fromJson(s, ResponsePacket.class);
                 response.setResponsePacket(s);
                 callBack.onSuccess(requestCode, response);
@@ -59,7 +58,6 @@ public class Router implements Routes {
                 System.out.println("--------------------------successJsonListener------------------------------");
                 System.out.println("---------" + s);
                 System.out.println("--------------------------successJsonListener------------------------------");
-                dismissDialog();
                 ResponsePacket response = new Gson().fromJson(s.toString(), ResponsePacket.class);
                 response.setResponsePacket(s.toString());
                 callBack.onSuccess(requestCode, response);
@@ -87,7 +85,7 @@ public class Router implements Routes {
                 }
                 Log.d(TAG, "---jsonError--" + jsonError);
             }
-            dismissDialog();
+
             try {
                 if (volleyError != null) {
                     if (volleyError.getCause() != null && volleyError.getCause().getMessage().equalsIgnoreCase("End of input at character 0 of ")) {
@@ -129,39 +127,12 @@ public class Router implements Routes {
         this.requestTag = requestTag;
     }
 
-    private void showDialog(String msg) {
-        try {
-            if (pdialog != null && pdialog.isShowing()) {
-                return;
-            }
-            pdialog = new ProgressDialog(context);
-            if (msg == null)
-                pdialog.setMessage("Loading....");
-            else
-                pdialog.setMessage(msg);
-            pdialog.setIndeterminate(true);
-            pdialog.setCancelable(false);
-            pdialog.show();
-        } catch (Exception e) {
-
-        }
-    }
-
-    private void dismissDialog() {
-        try {
-            if (pdialog != null && pdialog.isShowing())
-                pdialog.dismiss();
-        } catch (Exception e) {
-
-        }
-    }
-
     private void showNoInternetConnection() {
-        Toast.makeText(context, "noInternetAccess", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "No internet access", Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void makeJsonPostRequest(String url, JSONObject jsonRequest, boolean showDialog) {
+    public void makeJsonPostRequest(String url, JSONObject jsonRequest) {
         System.out.println("--------------------------------------------------------");
         System.out.println("------" + "url=  " + url + " --------");
         System.out.println("------" + "jsonRequest= " + jsonRequest + " --------");
@@ -169,9 +140,7 @@ public class Router implements Routes {
         System.out.println("--------------------------------------------------------");
 
         if (Utilities.getInstance().isOnline(context)) {
-            if (showDialog) {
-                showDialog(null);
-            }
+
             makePostJsonRequest(url, jsonRequest);
         } else {
             showNoInternetConnection();
@@ -180,7 +149,7 @@ public class Router implements Routes {
     }
 
     @Override
-    public void makeJsonPutRequest(String url, JSONObject jsonRequest, boolean showDialog) {
+    public void makeJsonPutRequest(String url, JSONObject jsonRequest) {
         System.out.println("--------------------------------------------------------");
         System.out.println("------" + "url=  " + url + " --------");
         System.out.println("------" + "jsonRequest= " + jsonRequest + " --------");
@@ -188,9 +157,7 @@ public class Router implements Routes {
         System.out.println("--------------------------------------------------------");
 
         if (Utilities.getInstance().isOnline(context)) {
-            if (showDialog) {
-                showDialog(null);
-            }
+
             makePutJsonRequest(url, jsonRequest);
         } else {
             showNoInternetConnection();
@@ -199,14 +166,12 @@ public class Router implements Routes {
     }
 
     @Override
-    public void makeStringGetRequest(String url, boolean showDialog) {
+    public void makeStringGetRequest(String url) {
         System.out.println("--------------------------------------------------------");
         System.out.println("------" + "url= " + url + " --------");
         System.out.println("--------------------------------------------------------");
         if (Utilities.getInstance().isOnline(context)) {
-            if (showDialog) {
-                showDialog(null);
-            }
+
             makeGetStringRequest(url);
         } else {
             showNoInternetConnection();
