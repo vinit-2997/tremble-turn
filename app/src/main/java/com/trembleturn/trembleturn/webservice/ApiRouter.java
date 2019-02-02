@@ -1,6 +1,5 @@
 package com.trembleturn.trembleturn.webservice;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,9 +22,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Router implements Routes {
+public class ApiRouter extends ApiRoutes {
 
-    public static final String TAG = Router.class.getSimpleName();
+    public static final String TAG = ApiRouter.class.getSimpleName();
     Context context;
     OnResponseListener callBack;
     private String headerKey;
@@ -42,11 +41,10 @@ public class Router implements Routes {
                 System.out.println("---------" + s);
                 System.out.println("----------------------------successStringListener----------------------------");
 
-                ResponsePacket response = new Gson().fromJson(s, ResponsePacket.class);
-                response.setResponsePacket(s);
+                JSONObject response = new JSONObject(s);
                 callBack.onSuccess(requestCode, response);
             } catch (Exception e) {
-                callBack.onSuccess(requestCode, new ResponsePacket("success", 0));
+                callBack.onSuccess(requestCode, new JSONObject());
                 e.printStackTrace();
             }
         }
@@ -58,12 +56,11 @@ public class Router implements Routes {
                 System.out.println("--------------------------successJsonListener------------------------------");
                 System.out.println("---------" + s);
                 System.out.println("--------------------------successJsonListener------------------------------");
-                ResponsePacket response = new Gson().fromJson(s.toString(), ResponsePacket.class);
-                response.setResponsePacket(s.toString());
+                JSONObject response = s;
                 callBack.onSuccess(requestCode, response);
             } catch (Exception e) {
                 e.printStackTrace();
-                callBack.onSuccess(requestCode, new ResponsePacket("success", 0));
+                callBack.onSuccess(requestCode, new JSONObject());
             }
         }
     };
@@ -73,13 +70,12 @@ public class Router implements Routes {
             System.out.println("------------------------errorListener--------------------------------");
             String err = null;
             String jsonError;
-            ResponsePacket responsePacket = null;
+            JSONObject response = new JSONObject();
             NetworkResponse networkResponse = volleyError.networkResponse;
             if (networkResponse != null && networkResponse.data != null) {
                 jsonError = new String(networkResponse.data);
                 try {
-                    responsePacket = new Gson().fromJson(jsonError, ResponsePacket.class);
-                    responsePacket.setResponsePacket(jsonError);
+                    response = new JSONObject(jsonError);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -89,15 +85,15 @@ public class Router implements Routes {
             try {
                 if (volleyError != null) {
                     if (volleyError.getCause() != null && volleyError.getCause().getMessage().equalsIgnoreCase("End of input at character 0 of ")) {
-                        callBack.onSuccess(requestCode, new ResponsePacket("success", 0));
+                        callBack.onSuccess(requestCode, new JSONObject());
                         return;
                     } else {
                         try {
                             if (volleyError.networkResponse.statusCode == 500) {
-                                callBack.onError(requestCode, ErrorType.ERROR500, responsePacket);
+                                callBack.onError(requestCode, ErrorType.ERROR500, response);
                                 return;
                             } else if (volleyError.networkResponse.statusCode == 400) {
-                                callBack.onError(requestCode, ErrorType.ERROR400, responsePacket);
+                                callBack.onError(requestCode, ErrorType.ERROR400, response);
                                 return;
                             } else {
                                 err = new String(volleyError.networkResponse.data);
@@ -113,13 +109,13 @@ public class Router implements Routes {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            callBack.onError(requestCode, ErrorType.ERROR, responsePacket);
+            callBack.onError(requestCode, ErrorType.ERROR, response);
             System.out.println("------------------------errorListener--------------------------------");
         }
     };
 
 
-    public Router(Context context, OnResponseListener callBack, int requestCode, String requestTag) {
+    public ApiRouter(Context context, OnResponseListener callBack, int requestCode, String requestTag) {
         this.context = context;
         this.callBack = callBack;
         this.requestCode = requestCode;
@@ -144,7 +140,7 @@ public class Router implements Routes {
             makePostJsonRequest(url, jsonRequest);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 
@@ -161,7 +157,7 @@ public class Router implements Routes {
             makePutJsonRequest(url, jsonRequest);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 
@@ -175,7 +171,7 @@ public class Router implements Routes {
             makeGetStringRequest(url);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 
@@ -188,7 +184,7 @@ public class Router implements Routes {
             MyApplication.getInstance().addToRequestQueue(sr, tag_json_obj);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 
@@ -222,7 +218,7 @@ public class Router implements Routes {
             MyApplication.getInstance().addToRequestQueue(jsonObjReq, requestTag);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 
@@ -256,7 +252,7 @@ public class Router implements Routes {
             MyApplication.getInstance().addToRequestQueue(jsonObjReq, requestTag);
         } else {
             showNoInternetConnection();
-            callBack.onError(requestCode, ErrorType.NO_INTERNET, new ResponsePacket());
+            callBack.onError(requestCode, ErrorType.NO_INTERNET, new JSONObject());
         }
     }
 }

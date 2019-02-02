@@ -455,7 +455,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                    public void onComplete(@NonNull Task<Location> task) {
 //                        if (task.isSuccessful()) {
 //                            // Set the map's camera position to the current location of the device.
-//                            mLastKnownLocation = task.getRoutes();
+//                            mLastKnownLocation = task.getResult();
 //                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
 //                                    new LatLng(mLastKnownLocation.getLatitude(),
 //                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
@@ -534,8 +534,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                    (new OnCompleteListener<PlaceLikelihoodBufferResponse>() {
 //                        @Override
 //                        public void onComplete(@NonNull Task<PlaceLikelihoodBufferResponse> task) {
-//                            if (task.isSuccessful() && task.getRoutes() != null) {
-//                                PlaceLikelihoodBufferResponse likelyPlaces = task.getRoutes();
+//                            if (task.isSuccessful() && task.getResult() != null) {
+//                                PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
 //
 //                                // Set the count, handling cases where less than 5 entries are returned.
 //                                int count;

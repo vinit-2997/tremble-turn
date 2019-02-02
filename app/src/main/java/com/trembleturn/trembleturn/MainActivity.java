@@ -1,21 +1,28 @@
 package com.trembleturn.trembleturn;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.trembleturn.trembleturn.webservice.Router;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.trembleturn.trembleturn.POJO.Routes;
 import com.trembleturn.trembleturn.webservice.ErrorType;
 import com.trembleturn.trembleturn.webservice.OnResponseListener;
 import com.trembleturn.trembleturn.webservice.ResponsePacket;
-import com.trembleturn.trembleturn.webservice.Router;
-import com.trembleturn.trembleturn.webservice.Routes;
+import com.trembleturn.trembleturn.webservice.ApiRouter;
+import com.trembleturn.trembleturn.webservice.ApiRoutes;
+
+import org.json.JSONObject;
 
 public class MainActivity extends BaseActivity implements OnResponseListener {
+
+    public static String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,23 +57,54 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
 
     public void getAtoBSteps(LatLng source, LatLng dest) {
         try {
-            new Router(this, this, 123, "test")
-                    .makeStringGetRequest(Routes.API_URL +
-                            "origin=" + String.valueOf(source.latitude) + "," + String.valueOf(source.longitude) + "&" +
-                            "destination=" + String.valueOf(dest.latitude) + "," + String.valueOf(dest.longitude) + "&" +
-                            "key=" + Routes.API_KEY);
+            new ApiRouter(this, this, ApiRoutes.RC_A2B_STEPS, TAG)
+                    .makeStringGetRequest(ApiRoutes.getA2BRequestUrl(source, dest));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void vibrateLeft() {
+        try {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_LEFT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_LEFT_HALF);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void vibrateRight() {
+        try {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_RIGHT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_RIGHT_HALF);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void onSuccess(int requestCode, ResponsePacket responsePacket) {
+    public void onSuccess(int requestCode, JSONObject response) {
+        switch (requestCode) {
+            case ApiRoutes.RC_A2B_STEPS:
+                try {
+                    Routes routes = new Gson().fromJson(response.getJSONArray("routes").get(0).toString(), Routes.class);
+                    Log.i(TAG, routes.legs.get(0).steps.get(0).htmlinstructions);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
 
+            case ApiRoutes.RC_BAND_LEFT_HALF:
+                Log.i(TAG, "Vibrate left band successful");
+                break;
+            case ApiRoutes.RC_BAND_RIGHT_HALF:
+                Log.i(TAG, "Vibrate right band successful");
+                break;
+        }
     }
 
     @Override
-    public void onError(int requestCode, ErrorType errorType, ResponsePacket responsePacket) {
+    public void onError(int requestCode, ErrorType errorType, JSONObject response) {
 
     }
 
