@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.trembleturn.trembleturn.POJO.Errors;
 import com.trembleturn.trembleturn.POJO.DirectionResult;
+import com.trembleturn.trembleturn.POJO.Routes;
 
 import java.util.ArrayList;
 
@@ -22,7 +23,7 @@ public class ResponsePacket implements Parcelable {
             return new ResponsePacket[size];
         }
     };
-    ArrayList<DirectionResult> result;
+    ArrayList<Routes> result;
     Errors errors;
     private String responsePacket;
     private String status;
@@ -76,11 +77,11 @@ public class ResponsePacket implements Parcelable {
         this.errors = errors;
     }
 
-    public ArrayList<DirectionResult> getResult() {
+    public ArrayList<Routes> getRoutes() {
         return result;
     }
 
-    public void setResult(ArrayList<DirectionResult> result) {
+    public void setResult(ArrayList<Routes> result) {
         this.result = result;
     }
 
