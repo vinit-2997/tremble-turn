@@ -1,11 +1,43 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches/build_file_checksums.ser
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
+.idea
+
+# Few things to keep from .idea
+!/.idea/runConfigurations.xml
+!/.idea/codeStyles
+!/.idea/dictionary
+!/.idea/inspectionProfiles
+!/.idea/navEditor.xml
+
 .DS_Store
 /build
 /captures
 .externalNativeBuild
+
+# As per update in AS 3.1
+app/schemas/*
+
+# Crashlytics configuations
+com_crashlytics_export_strings.xml
+
+# Gradle generated files
+*.apk
+*.zip
+*.aar
+
+# Signing files
+.signing/
+
+# app private files
+google-services.json
+app/release/
+
+# OS-generated bloat
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
