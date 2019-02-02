@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+
+import com.trembleturn.trembleturn.webservice.Router;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.trembleturn.trembleturn.webservice.ErrorType;
@@ -18,6 +21,16 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Button left = (Button)findViewById(R.id.left);
+        Button right = (Button)findViewById(R.id.right);
+
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
     }
 
 

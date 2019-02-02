@@ -26,13 +26,13 @@
         android:inputType="textPersonName"
         android:text="Name" />
 
-    <Button
+    <ImageButton
         android:id="@+id/B_search"
         android:layout_width="wrap_content"
         android:layout_height="62dp"
         android:layout_alignParentRight="true"
         android:onClick="OnClick"
-        android:text="Search" />
+        android:src="@drawable/icons8search24" />
 
     <!--tools:layout="@layout/activity_maps"-->
 </RelativeLayout>
