@@ -38,6 +38,14 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
             case R.id.call_api:
                 getAtoBSteps(new LatLng(19.0269, 72.8553), new LatLng(19.44769, 73.015137));
                 break;
+            case R.id.left_band_btn:
+                Log.d(TAG, "vibrate left");
+                vibrateLeft();
+                break;
+            case R.id.right_band_btn:
+                Log.d(TAG, "vibrate right");
+                vibrateRight();
+                break;
         }
 
     }
