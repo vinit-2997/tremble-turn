@@ -9,9 +9,9 @@
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
-    android:layout_height="670dp"
+    android:layout_height="600dp"
     tools:context="com.trembleturn.trembleturn.MapsActivity"
-    android:layout_alignParentBottom="true"
+
     android:layout_alignParentStart="true"
     android:layout_alignParentLeft="true"
 
@@ -43,6 +43,14 @@
         android:layout_marginEnd="-104dp"
         android:onClick="setPoints"
         android:text="set" />
+
+    <TextView
+        android:id="@+id/directions"
+        android:layout_width="match_parent"
+        android:layout_height="127dp"
+        android:layout_below="@+id/map"
+        android:layout_marginTop="-2dp"
+        android:text="TextView" />
 
     <!--tools:layout="@layout/activity_maps"-->
 </RelativeLayout>

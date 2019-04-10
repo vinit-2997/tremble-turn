@@ -1,7 +1,9 @@
 package com.trembleturn.trembleturn;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,10 +18,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,26 +41,43 @@ import com.google.android.gms.location.LocationListener;
 
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
+import com.trembleturn.trembleturn.POJO.Routes;
+import com.trembleturn.trembleturn.POJO.Steps;
+import com.trembleturn.trembleturn.webservice.ApiRouter;
+import com.trembleturn.trembleturn.webservice.ApiRoutes;
+import com.trembleturn.trembleturn.webservice.ErrorType;
+import com.trembleturn.trembleturn.webservice.OnResponseListener;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, OnResponseListener
+{
+    public static String TAG = MainActivity.class.getSimpleName();
 
-    private GoogleMap mMap;
+    public GoogleMap mMap;
     private GoogleApiClient client;
     private LocationRequest locationRequest;
     private Location lastLocation;
     private Marker currentLocationMarker;
     public static final int REQUEST_LOCATION_CODE = 99;
+    public LatLng latlng;
+    public static String instructions = new String();
+
 
     String[] latlong =  "-34.8799074,174.7565664".split(",");
     double latitude = Double.parseDouble(latlong[0]);
     double longitude = Double.parseDouble(latlong[1]);
 
     LatLng location = new LatLng(latitude, longitude);
+
+    TextView directions = (TextView)findViewById(R.id.directions);
 
 
     @Override
@@ -106,52 +127,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-//    public void animateMarker(final Marker marker, final LatLng toPosition, final boolean hideMarker)
-//    {
-
-//        final Handler handler = new Handler();
-//        final long start = SystemClock.uptimeMillis();
-//        Projection proj = mMap.getProjection();
-//        Point startPoint = proj.toScreenLocation(marker.getPosition());
-//        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
-//        final long duration = 500;
-//
-//        final Interpolator interpolator = new LinearInterpolator();
-//
-//        handler.post(new Runnable()
-//        {
-//            @Override
-//            public void run()
-//            {
-//                long elapsed = SystemClock.uptimeMillis() - start;
-//                float t = interpolator.getInterpolation((float) elapsed / duration);
-//                double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
-//                double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
-//                marker.setPosition(new LatLng(lat, lng));
-//
-//                if (t < 1.0)
-//                {
-//                    // Post again 16ms later.
-//                    handler.postDelayed(this, 16);
-//                }
-//
-//                else
-//                {
-//                    if (hideMarker)
-//                    {
-//                        marker.setVisible(false);
-//                    }
-//                    else
-//                    {
-//                        marker.setVisible(true);
-//                    }
-//                }
-//            }
-//        });
- //   }
 
 
-    public static void setAnimation(GoogleMap myMap, final List<LatLng> directionPoint)
+    public static void setAnimation(GoogleMap myMap, final List<LatLng> directionPoint, final List<String> man, final List<String> instr)
     {
         Marker marker = myMap.addMarker(new MarkerOptions()
                 .position(directionPoint.get(0))
@@ -159,11 +137,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(directionPoint.get(0), 10));
 
-        animateMarker(myMap, marker, directionPoint, false);
+        animateMarker(myMap, marker, directionPoint, man, instr, false);
     }
 
 
-    private static void animateMarker(final GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint, final boolean hideMarker)
+    private static void animateMarker(final GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint,final List<String> man,final List<String> instr, final boolean hideMarker)
     {
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
@@ -176,6 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         {
             int i = 0;
 
+
             @Override
             public void run()
             {
@@ -183,13 +162,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 float t = interpolator.getInterpolation((float) elapsed / duration);
                 if (i < directionPoint.size())
                 {
+
                     marker.setPosition(directionPoint.get(i));
                     myMap.animateCamera(CameraUpdateFactory.newLatLng(directionPoint.get(i)));
+
+                    instructions= instr.get(i);
+
+                    if(man.get(i).contains("right")){
+
+                    }
+                    else if(man.get(i).contains("left")){
+
+                    }
+
+                    else{
+
+                    }
+                     Log.d("maneuver", man.get(i) );
+
+
 
                 }
                 //myMap.animateCamera(CameraUpdateFactory.zoomTo(2.0f));
 
                 i++;
+
 
 
                 if (t < 1.0) {
@@ -280,7 +277,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for(int i=0; i<addressList.size(); i++)
                 {
                     Address myAddress = addressList.get(i);
-                    LatLng latlng = new LatLng(myAddress.getLatitude(), myAddress.getLongitude());
+//                    LatLng latlng = new LatLng(myAddress.getLatitude(), myAddress.getLongitude());
+                      latlng = new LatLng(myAddress.getLatitude(), myAddress.getLongitude());
+
                     mo.position(latlng);
                     mo.title("Your Search Result !");
                     mMap.addMarker(mo);
@@ -298,62 +297,112 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MarkerOptions mo = new MarkerOptions();
 
             List<LatLng> zz = new ArrayList<LatLng>();
-//            zz.add(new LatLng(19.0269, 72.8553));
-//            zz.add(new LatLng(73.015137, 19.447169));
-//            zz.add(new LatLng(18.87705190456764, 432.9396057128907));
-//            zz.add(new LatLng(18.87900103610622, 433.06320190429693));
-//            zz.add(new LatLng(18.79386786395132, 433.0625152587891));
 
-            zz.add(new LatLng(43.6533096, -79.3827656));
-            zz.add(new LatLng(43.6557259, -79.38373369999999));
-            zz.add(new LatLng(43.6557259, -79.38373369999999));
-            zz.add(new LatLng(43.6618361, -79.35452389999999));
-            zz.add(new LatLng(43.6557259, -79.38373369999999));
-            zz.add(new LatLng(43.66366379999999, -79.3555052));
-            zz.add(new LatLng(43.6618361, -79.35452389999999));
-            zz.add(new LatLng(43.7628257, -79.33669689999999));
-            zz.add(new LatLng(43.66366379999999, -79.3555052));
-            zz.add(new LatLng(43.7680179, -79.3292728));
-            zz.add(new LatLng(43.7628257, -79.33669689999999));
-            zz.add(new LatLng(43.7901516, -79.2235381));
-            zz.add(new LatLng(43.7680179, -79.3292728));
-            zz.add(new LatLng(43.79311999999999, -79.2162862));
-            zz.add(new LatLng(43.7901516, -79.2235381));
-            zz.add(new LatLng(43.7901516, -79.2235381));
+
+                try
+                {
+                    LatLng source = new LatLng(19.0269, 72.8553);
+                    new ApiRouter(this, this, ApiRoutes.RC_A2B_STEPS, TAG)
+                            .makeStringGetRequest(ApiRoutes.getA2BRequestUrl(source, latlng));
+                }
+
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
 
 
 //
-//            zz.add(new LatLng(-35.27801,149.12958));
-//            zz.add(new LatLng(-35.28032,149.12907));
-//            zz.add(new LatLng(-35.28099,149.12929));
-//            zz.add(new LatLng(-35.28144,149.12984));
-//            zz.add(new LatLng(-35.28194,149.13003));
-//            zz.add(new LatLng(-35.28282,149.12956));
-//            zz.add(new LatLng(-35.28302,149.12881));
-//            zz.add(new LatLng(-35.28473,149.12836));
-
-
-
-
-
-
-
-
-//            String[] latlong =  "19.0269, 72.8553".split(",");
-//            double latitude = Double.parseDouble(latlong[0]);
-//            double longitude = Double.parseDouble(latlong[1]);
+//            Intent intent = getIntent();
+//            Bundle b = intent.getExtras();
 //
-//            LatLng location = new LatLng(latitude, longitude);
-//            mo.position(location);
-//            mo.title("Your Search Result !");
-//            Marker aa=mMap.addMarker(mo);
-//            mMap.animateCamera(CameraUpdateFactory.newLatLng(location));
-
-            setAnimation(mMap,zz);
+//            String message = intent.getStringExtra("dataFromMain");
+//
+//            Bundle extras = getIntent().getExtras();
+//            if(extras != null)
+//            {
+//                //List<LatLng> j =  (List<LatLng>)extras.get("name");
+//                Routes routes = (Routes)extras.get("name");
+//                int sizeOfRoute = routes.legs.get(0).steps.size();
+//
+//                int i;
+//                List<LatLng> latlnglist = new ArrayList<LatLng>();
+//
+//                for(i=0; i<sizeOfRoute; i++)
+//                {
+//                    double lat1 = routes.legs.get(0).steps.get(0).end_location.lat;
+//                    double lng1 = routes.legs.get(0).steps.get(0).end_location.lng;
+//                    latlnglist.add(new LatLng(lat1, lng1));
+//                }
+//                setAnimation(mMap,latlnglist);
+//
+//            }
         }
-
     }
 
+    public void onSuccess(int requestCode, JSONObject response)
+    {
+        switch (requestCode)
+        {
+            case ApiRoutes.RC_A2B_STEPS:
+                try
+                {
+                    Routes routes = new Gson().fromJson(response.getJSONArray("routes").get(0).toString(), Routes.class);
+                    String []pathdisplay=getPaths(routes);
+                    directiondisplay(pathdisplay);
+
+                    int sizeOfRoute = routes.legs.get(0).steps.size();
+
+
+
+                    int i;
+                    List<LatLng> latlnglist = new ArrayList<LatLng>();
+                    List<String> manevuer = new ArrayList<String>();
+                    List<String> instr = new ArrayList<String>();
+
+
+
+                    for(i=0; i<sizeOfRoute; i++)
+                    {
+                        double lat1 = routes.legs.get(0).steps.get(i).end_location.lat;
+                        double lng1 = routes.legs.get(0).steps.get(i).end_location.lng;
+                        latlnglist.add(new LatLng(lat1, lng1));
+
+                        String m2 = routes.legs.get(0).steps.get(i).htmlinstructions;
+                        instr.add(m2);
+
+
+                        String m1 = routes.legs.get(0).steps.get(i).maneuver;
+                        if(m1== null)
+                            manevuer.add("Keep going");
+                        else
+                            manevuer.add(m1);
+
+                    }
+
+                    Log.i(TAG,latlnglist.toString());
+
+                    setAnimation(mMap,latlnglist, manevuer, instr);
+                }
+
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                break;
+
+            case ApiRoutes.RC_BAND_LEFT_HALF:
+                Log.i(TAG, "Vibrate left band successful");
+                break;
+            case ApiRoutes.RC_BAND_RIGHT_HALF:
+                Log.i(TAG, "Vibrate right band successful");
+                break;
+        }
+    }
+
+    public void onError(int requestCode, ErrorType errorType, JSONObject response) {
+
+    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle)
@@ -407,7 +456,144 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
 
     }
+
+    public void showtoast(String show)
+    {
+        Toast.makeText(this, show, Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void vibrateLeft()
+    {
+        try
+        {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_LEFT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_LEFT_HALF);
+        }
+
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void vibrateRight()
+    {
+        try
+        {
+            new ApiRouter(this, this, ApiRoutes.RC_BAND_RIGHT_HALF, TAG)
+                    .makeStringGetRequest(ApiRoutes.BAND_RIGHT_HALF);
+        }
+
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    public String[] getPaths(Routes route){
+
+        List<Steps> step = route.legs.get(0).steps;
+        String routes[] = new String[step.size()];
+        for(int i=0;i<step.size();i++){
+
+            routes[i]=getPath(step.get(i));
+        }
+
+        return routes;
+    }
+
+    public String getPath(Steps step){
+
+        String polyline = step.polyline.points;
+        return polyline;
+    }
+
+    public void directiondisplay(String[] path){
+
+
+        for(int i =0 ; i<path.length ; i++){
+
+
+
+            PolylineOptions options = new PolylineOptions();
+            options.color(Color.RED);
+            options.width(10);
+            options.addAll(decode(path[i]));
+
+            mMap.addPolyline(options);
+
+        }
+
+    }
+
+
+    public static List<LatLng> decode(final String encodedPath) {
+        int len = encodedPath.length();
+
+        // For speed we preallocate to an upper bound on the final length, then
+        // truncate the array before returning.
+        final List<LatLng> path = new ArrayList<LatLng>();
+        int index = 0;
+        int lat = 0;
+        int lng = 0;
+
+        while (index < len) {
+            int result = 1;
+            int shift = 0;
+            int b;
+            do {
+                b = encodedPath.charAt(index++) - 63 - 1;
+                result += b << shift;
+                shift += 5;
+            } while (b >= 0x1f);
+            lat += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+            result = 1;
+            shift = 0;
+            do {
+                b = encodedPath.charAt(index++) - 63 - 1;
+                result += b << shift;
+                shift += 5;
+            } while (b >= 0x1f);
+            lng += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+            path.add(new LatLng(lat * 1e-5, lng * 1e-5));
+        }
+
+        return path;
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -808,3 +994,101 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //    }
 //}
 //
+
+
+//            zz.add(new LatLng(19.0269, 72.8553));
+//            zz.add(new LatLng(73.015137, 19.447169));
+//            zz.add(new LatLng(18.87705190456764, 432.9396057128907));
+//            zz.add(new LatLng(18.87900103610622, 433.06320190429693));
+//            zz.add(new LatLng(18.79386786395132, 433.0625152587891));
+
+//            zz.add(new LatLng(43.6533096, -79.3827656));
+//            zz.add(new LatLng(43.6557259, -79.38373369999999));
+//            zz.add(new LatLng(43.6557259, -79.38373369999999));
+//            zz.add(new LatLng(43.6618361, -79.35452389999999));
+//            zz.add(new LatLng(43.6557259, -79.38373369999999));
+//            zz.add(new LatLng(43.66366379999999, -79.3555052));
+//            zz.add(new LatLng(43.6618361, -79.35452389999999));
+//            zz.add(new LatLng(43.7628257, -79.33669689999999));
+//            zz.add(new LatLng(43.66366379999999, -79.3555052));
+//            zz.add(new LatLng(43.7680179, -79.3292728));
+//            zz.add(new LatLng(43.7628257, -79.33669689999999));
+//            zz.add(new LatLng(43.7901516, -79.2235381));
+//            zz.add(new LatLng(43.7680179, -79.3292728));
+//            zz.add(new LatLng(43.79311999999999, -79.2162862));
+//            zz.add(new LatLng(43.7901516, -79.2235381));
+//            zz.add(new LatLng(43.7901516, -79.2235381));
+
+
+//
+//            zz.add(new LatLng(-35.27801,149.12958));
+//            zz.add(new LatLng(-35.28032,149.12907));
+//            zz.add(new LatLng(-35.28099,149.12929));
+//            zz.add(new LatLng(-35.28144,149.12984));
+//            zz.add(new LatLng(-35.28194,149.13003));
+//            zz.add(new LatLng(-35.28282,149.12956));
+//            zz.add(new LatLng(-35.28302,149.12881));
+//            zz.add(new LatLng(-35.28473,149.12836));
+
+
+
+
+
+
+//            String[] latlong =  "19.0269, 72.8553".split(",");
+//            double latitude = Double.parseDouble(latlong[0]);
+//            double longitude = Double.parseDouble(latlong[1]);
+//
+//            LatLng location = new LatLng(latitude, longitude);
+//            mo.position(location);
+//            mo.title("Your Search Result !");
+//            Marker aa=mMap.addMarker(mo);
+//            mMap.animateCamera(CameraUpdateFactory.newLatLng(location));
+//            public void getAtoBSteps(LatLng source, LatLng dest)
+//            {
+
+
+
+//    public void animateMarker(final Marker marker, final LatLng toPosition, final boolean hideMarker)
+//    {
+
+//        final Handler handler = new Handler();
+//        final long start = SystemClock.uptimeMillis();
+//        Projection proj = mMap.getProjection();
+//        Point startPoint = proj.toScreenLocation(marker.getPosition());
+//        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+//        final long duration = 500;
+//
+//        final Interpolator interpolator = new LinearInterpolator();
+//
+//        handler.post(new Runnable()
+//        {
+//            @Override
+//            public void run()
+//            {
+//                long elapsed = SystemClock.uptimeMillis() - start;
+//                float t = interpolator.getInterpolation((float) elapsed / duration);
+//                double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
+//                double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
+//                marker.setPosition(new LatLng(lat, lng));
+//
+//                if (t < 1.0)
+//                {
+//                    // Post again 16ms later.
+//                    handler.postDelayed(this, 16);
+//                }
+//
+//                else
+//                {
+//                    if (hideMarker)
+//                    {
+//                        marker.setVisible(false);
+//                    }
+//                    else
+//                    {
+//                        marker.setVisible(true);
+//                    }
+//                }
+//            }
+//        });
+//   }

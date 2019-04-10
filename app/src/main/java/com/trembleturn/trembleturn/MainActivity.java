@@ -20,6 +20,9 @@ import com.trembleturn.trembleturn.webservice.ApiRoutes;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends BaseActivity implements OnResponseListener {
 
     public static String TAG = MainActivity.class.getSimpleName();
@@ -54,20 +57,29 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
 
     }
 
-    public void getAtoBSteps(LatLng source, LatLng dest) {
-        try {
-            new ApiRouter(this, this, ApiRoutes.RC_A2B_STEPS, TAG)
-                    .makeStringGetRequest(ApiRoutes.getA2BRequestUrl(source, dest));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void getAtoBSteps(LatLng source, LatLng dest)
+    {
+//        try
+//        {
+//            new ApiRouter(this, this, ApiRoutes.RC_A2B_STEPS, TAG)
+//                    .makeStringGetRequest(ApiRoutes.getA2BRequestUrl(source, dest));
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
     }
 
-    private void vibrateLeft() {
-        try {
+    private void vibrateLeft()
+    {
+        try
+        {
             new ApiRouter(this, this, ApiRoutes.RC_BAND_LEFT_HALF, TAG)
                     .makeStringGetRequest(ApiRoutes.BAND_LEFT_HALF);
-        } catch (Exception e) {
+        }
+
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
@@ -82,13 +94,40 @@ public class MainActivity extends BaseActivity implements OnResponseListener {
     }
 
     @Override
-    public void onSuccess(int requestCode, JSONObject response) {
-        switch (requestCode) {
+    public void onSuccess(int requestCode, JSONObject response)
+    {
+        switch (requestCode)
+        {
             case ApiRoutes.RC_A2B_STEPS:
-                try {
+                try
+                {
                     Routes routes = new Gson().fromJson(response.getJSONArray("routes").get(0).toString(), Routes.class);
-                    Log.i(TAG, routes.legs.get(0).start_location.lat + " " + routes.legs.get(0).steps.get(0).end_location.lat);
-                } catch (Exception e) {
+
+                    //Log.i(TAG, routes.legs.get(0).start_location.lat + " " + routes.legs.get(0).steps.get(0).end_location.lat);
+                    //Log.i(TAG, routes.legs.get(0).steps.size() + " " + routes.legs.get(0).steps.get(0).end_location.lat);
+
+//                    int sizeOfRoute = routes.legs.get(0).steps.size();
+//
+//                    int i;
+//                    List<LatLng> latlnglist = new ArrayList<LatLng>();
+//
+//                    for(i=0; i<sizeOfRoute; i++)
+//                    {
+//                        double lat1 = routes.legs.get(0).steps.get(0).end_location.lat;
+//                        double lng1 = routes.legs.get(0).steps.get(0).end_location.lng;
+//                        latlnglist.add(new LatLng(lat1, lng1));
+//                    }
+
+                    //MapsActivity.setAnimation(mMap,latlnglist );
+                    Intent intent = new Intent(MainActivity.this, MapsActivity.class);
+                    intent.putExtra("dataFromMain", routes );
+                    startActivity(intent);
+                    //Log.i(TAG,latlnglist.toString());
+
+                }
+
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
                 break;
